@@ -112,8 +112,8 @@ xsi:schemaLocation="http://www.example.com/xsd2cocoa template.xsd">
         </value>
     </read>
   </simpletype>
-  <simpletype name="dateTime" objType="NSDate"
-  arrayType="[NSDate]">
+  <simpletype name="dateTime" objType="Date"
+  arrayType="[Date]">
     <read>
       <prefix>
         <![CDATA[
@@ -157,8 +157,8 @@ xsi:schemaLocation="http://www.example.com/xsd2cocoa template.xsd">
         </value>
     </read>
   </simpletype>
-  <simpletype name="date" objType="NSDate"
-      arrayType="[NSDate]">
+  <simpletype name="date" objType="Date"
+      arrayType="[Date]">
       <read>
           <prefix>
               <![CDATA[let dateOnlyFormatter = NSDateFormatter()
@@ -185,8 +185,8 @@ xsi:schemaLocation="http://www.example.com/xsd2cocoa template.xsd">
           </value>
       </read>
   </simpletype>
-  <simpletype name="time" objType="NSDate"
-      arrayType="[NSDate]">
+  <simpletype name="time" objType="Date"
+      arrayType="[Date]">
       <read>
           <prefix>
               <![CDATA[let timeOnlyFormatter = NSDateFormatter()
@@ -225,144 +225,60 @@ xsi:schemaLocation="http://www.example.com/xsd2cocoa template.xsd">
     <implementation>
       <header extension=""></header>
       <class extension="swift">
-        <![CDATA[
+        <![CDATA[//
+        //  {{ type.targetClassName }}.swift
+        //  targetNamespace = {{ type.schema.targetNamespace }}
+        //
+        //  Created by xsd2cocoa/XSDConverter.
+        //  Copyright (c) 2018 EHI. All rights reserved.
+        //
+        
         import Foundation
 
-        @objc
-        class {{ type.targetClassName }} {% if type.hasComplexBaseClass %}: {{ type.baseClass.targetClassName }} {%else %}: NSObject{% /if %}{
-            {% if type.hasComplexBaseClass %}
-            {% else %}
-            /** Property that sets the NSLocale used by formatters of this type. It defaults to enUSPOSIX */
-            var locale = NSLocale(localeIdentifier: "en_US_POSIX")
-            {% /if %}
+        class {{ type.targetClassName }} {% if type.hasComplexBaseClass %}: {{ type.baseClass.targetClassName }} {%else %}: NSObject, Codable {% /if %}{
+
             {% for attribute in type.attributes %}
             var {{ attribute.variableName }}: {% if attribute.hasEnumeration %}{{ attribute.schemaType.enumerationName }}{% else %}{{ attribute.codeType }}{% /if %}?
             {% /for %}
-            {% for element in type.elements %}
-            var {{ element.variableName }}: {% if element.hasEnumeration %}{{ element.schemaType.enumerationName }}{% else %}{{ element.codeType }}{% /if %}?
+            {% for element in type.elements %}var {{ element.variableName }}: {% if element.hasEnumeration %}{{ element.schemaType.enumerationName }}{% else %}{{ element.codeType }}{% /if %}{% if element.isNotOptionalOrNotMultiple %}!{% else %}?{% /if %}
             {% /for %}
             {% if type.hasSimpleBaseClass %}/**
             the type's underlying value
             */
             var value: {% if type.baseClass.hasEnumeration %}{{ type.baseClass.enumerationName }}{% else %}{{ type.baseClass.targetClassName }}{% /if %}?{% /if %}
             
-            {% if type.hasComplexBaseClass %}override {% /if %}func readAttributes(reader: xmlTextReaderPtr) {{% if type.hasComplexBaseClass %}
-            super.readAttributes(reader)
-            {% /if %}{{ type.combinedReadPrefixCode }}
-            
-            {% for attribute in type.attributes %}
-            let {{ attribute.name }}AttrName = UnsafePointer<xmlChar>(NSString(stringLiteral: "{{ attribute.name }}").UTF8String)
-            let {{ attribute.name }}AttrValue = xmlTextReaderGetAttribute(reader, {{ attribute.name }}AttrName)
-            if({{ attribute.name }}AttrValue != nil) {
-                {{ attribute.readCodeForAttribute }}
-                xmlFree({{ attribute.name }}AttrValue)
-                }{% /for %}
+            {% if type.hasElements %}private enum CodingKeys: String, CodingKey {
+                {% for element in type.elements %}case {{element.variableName}} = "{{element.codingKeyName}}"
+                {% /for %}
             }
-            
-            {% if type.hasComplexBaseClass %}override {% /if %}init(reader: xmlTextReaderPtr) {
-                let _complexTypeXmlDept = xmlTextReaderDepth(reader)
-                {% if type.hasComplexBaseClass %}super.init(reader: reader){% else %}super.init(){% /if %}
-                {{ type.combinedReadPrefixCode }}{% if type.hasComplexBaseClass %}{% else %}
-                self.readAttributes(reader){% /if %}
-                {% for element in type.elements %}
-                {% if element.isSingleValue %}{% else %}var {{ element.variableName }}Array = {{ element.codeType }}(){% /if %}{% /for %}
+            {% /if %}
+
+            {% if type.hasElements %}
+            required init(from decoder: Decoder) throws {
+                {% if type.hasComplexBaseClass %}try super.init(from: decoder){% else %}super.init(){% /if %}
+     
+                let values = try decoder.container(keyedBy: CodingKeys.self)
                 
-                {% if type.hasComplexBaseClass %}var _readerOk:Int32=1{% else %}var _readerOk = xmlTextReaderRead(reader){% /if %}
-                var _currentNodeType = xmlTextReaderNodeType(reader)
-                var _currentXmlDept = xmlTextReaderDepth(reader)
-                
-                while(_readerOk > 0 && _currentNodeType != 0/*XML_READER_TYPE_NONE*/ && _complexTypeXmlDept < _currentXmlDept) {
-                {% if type.hasComplexChildren %}var handledInChild = false{% /if %}
-                    if(_currentNodeType == 1/*XML_READER_TYPE_ELEMENT*/ || _currentNodeType == 3/*XML_READER_TYPE_TEXT*/) {
-                        let _currentElementNameXmlChar = xmlTextReaderConstLocalName(reader)
-                        let _currentElementName = String.fromCString(UnsafePointer<CChar>(_currentElementNameXmlChar))
-                        {% for element in type.elements %}if("{{element.name}}" == _currentElementName) {
-                            
-                            {% if element.hasComplexType %}
-                            {{ element.readCodeForContent }}
-                            handledInChild = true
-                            {% else %}
-                            _readerOk = xmlTextReaderRead(reader)
-                            _currentNodeType = xmlTextReaderNodeType(reader)
-                            let {{element.name}}ElementValue = xmlTextReaderConstValue(reader)
-                            if {{element.name}}ElementValue != nil {
-                                {{ element.readCodeForContent }}
-                            }
-                            _readerOk = xmlTextReaderRead(reader)
-                            _currentNodeType = xmlTextReaderNodeType(reader)
-                            {% /if %}
-                            
-                        } else {% /for %} {% if type.hasSimpleBaseClass %} if("#text" == _currentElementName){
-                            let contentValue = xmlTextReaderConstValue(reader)
-                            if(contentValue != nil) {
-                                {{ type.readSimpleContent }}
-                            }
-                        } else {% /if %} if(true) {
-                            print("Ignoring unexpected: \(_currentElementName)")
-                            break
-                        }
-                    }
-                    {% if type.hasComplexChildren %}_readerOk = handledInChild ? xmlTextReaderReadState(reader) : xmlTextReaderRead(reader){% else %}_readerOk = xmlTextReaderRead(reader){% /if %}
-                    _currentNodeType = xmlTextReaderNodeType(reader)
-                    _currentXmlDept = xmlTextReaderDepth(reader)
-                }
-                {% for element in type.elements %}
-                {% if element.isSingleValue %}{% else %}if({{ element.variableName }}Array.count > 0) { self.{{ element.variableName }} = {{ element.variableName }}Array }{% /if %}{% /for %}
-            }
-            
-            {% if type.hasComplexBaseClass %}override {% /if %}var dictionary: [String: AnyObject] {
-                var dict = [String: AnyObject]()
-                {% if type.hasComplexBaseClass %}for (name, value) in super.dictionary {
-                    dict[name] = value
-                    }{% /if %}
-                    
-                    {% for attribute in type.attributes %}
-                    if(self.{{ attribute.variableName }} != nil) {
-                        {% if attribute.hasEnumeration %}
-                        let obj = {{ attribute.schemaType.enumerationName }}.toString(self.{{ attribute.variableName }}!)
-                        dict["{{ attribute.variableName }}"] = obj
-                        {% else %}
-                        dict["{{ attribute.variableName }}"] = self.{{ attribute.variableName }}!
-                        {% /if %}
-                    }
-                    {% /for %}
-                    {% for element in type.elements %}
-                    {% if element.hasComplexType %}
-                    if(self.{{ element.variableName }} != nil) {
-                        dict["{{ element.variableName }}"] = self.{{ element.variableName }}!{% if element.isSingleValue %}{% else %}.map({$0.dictionary}){% /if %}
-                    }
-                    {% else %}
-                    if(self.{{ element.variableName }} != nil) {
-                        {% if element.hasEnumeration %}
-                        let obj = {{ element.schemaType.enumerationName }}.toString({{ element.variableName }}!)
-                        dict["value"] = obj
-                        {% else %}
-                        dict["{{ element.variableName }}"] = self.{{ element.variableName }}!
-                        {% /if %}
-                    }
-                    {% /if %}
-                    {% /for %}{% if type.hasSimpleBaseClass %}
-                    if(self.value != nil) {
-                        {% if type.baseClass.hasEnumeration %}
-                        let obj = {{ type.baseClass.enumerationName }}.toString(self.value!)
-                        dict["value"] = obj
-                        {% else %}
-                        dict["value"] = self.value!
-                        {% /if %}
-                    }
-                    {% /if %}
-                    
-                    return dict
-                }
+                {% for element in type.elements %}{% if element.hasEnumeration %}{{ element.variableName }} = try? values.decode({{ element.schemaType.enumerationName }}.self, forKey: .{{element.variableName}}){% else %}{{ element.variableName }} = {% if element.isNotOptionalOrNotMultiple %}({% else %}{% /if %}try? values.decode({{ element.codeType }}.self, forKey: .{{element.variableName}}){% /if %}{% if element.isNotOptionalOrNotMultiple %}) ?? {{ element.defaultOptional }}{% else %}{% /if %}
+                {% /for %}
                 
             }
-            ]]>
+            {% /if %}
+            
+        }]]>
         </class>
     </implementation>
     <reader>
       <header extension=""></header>
       <class extension="swift">
-        <![CDATA[
+        <![CDATA[//
+            //  {{ type.targetClassFileName }}.swift
+            //  targetNamespace = {{ type.schema.targetNamespace }}
+            //
+            //  Created by xsd2cocoa/XSDConverter.
+            //  Copyright (c) 2018 EHI. All rights reserved.
+            //
+            
             import Foundation
             
             let kGlobalElementNamesArray = ["##elements##"{% for element in type.globalElements %},"{{ element.name }}"{% /for %}]
@@ -415,8 +331,7 @@ xsi:schemaLocation="http://www.example.com/xsd2cocoa template.xsd">
                     
                     return nil
                 }
-            }
-            ]]>
+            }]]>
         </class>
     </reader>
   </complextype>
@@ -444,41 +359,20 @@ xsi:schemaLocation="http://www.example.com/xsd2cocoa template.xsd">
     <implementation>
       <header extension=""></header>
       <class extension="swift">
-        <![CDATA[
+        <![CDATA[//
+            //  {{ type.enumerationName }}.swift
+            //  targetNamespace = {{ type.schema.targetNamespace }}
+            //
+            //  Created by xsd2cocoa/XSDConverter.
+            //  Copyright (c) 2018 EHI. All rights reserved.
+            //
+            
             import Foundation
             
-            enum {{ type.enumerationName }} : {{ type.swiftIntEnum }} {
-                case Unknown = -1
-                {% for enumValue in type.enumerationValues %}case {{ enumValue }}
+            enum {{ type.enumerationName }} : String, Codable {
+                {% for enum in type.enumerations %}case {{ enum.formattedValue }} = "{{ enum.value }}"
                 {% /for %}
-                
-                private static let namesArray = ["Unknown"{% for enumValue in type.enumerationValues %},"{{ enumValue }}"{% /for %}]
-                
-                static func toString(enumType:{{ type.enumerationName }}) -> String {
-                    let i = enumType.rawValue + 1
-                    return namesArray[i];
-                }
-                
-                static func fromString(enumString:String?) -> {{ type.enumerationName }} {
-                    if var enumString = enumString {
-                        let locale = NSLocale(localeIdentifier: "en_US_POSIX")
-                        let numFormatter = NSNumberFormatter()
-                        numFormatter.locale = locale
-                        
-                        if(numFormatter.numberFromString(enumString) != nil) {
-                            enumString = "Value\(enumString)"
-                        }
-                        if let i = namesArray.indexOf(enumString) {
-                            if let enumType = {{ type.enumerationName }}(rawValue:i-1) {
-                                return enumType
-                            }
-                        }
-                    }
-                    return .Unknown
-                    
-                }
-            }
-            ]]>
+            }]]>
         </class>
     </implementation>
   </enumeration>
