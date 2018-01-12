@@ -120,7 +120,7 @@
     }
 
     //apply custom prefix if set
-    id classPrefix = nil;
+    id classPrefix = [self retrieveDefaultClassPrefix];
     if(self.customPrefix.stringValue.length) {
         classPrefix = self.customPrefix.stringValue;
     }
@@ -334,6 +334,12 @@
             }
             break;
     }
+}
+
+- (NSString*)retrieveDefaultClassPrefix {
+    NSDictionary *appDefaults = [NSDictionary dictionaryWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"appDefaults" ofType:@"plist"]];
+    NSString *classPrefix = [appDefaults objectForKey:@"classPrefix"];
+    return [NSString stringWithFormat:@"%@", classPrefix];
 }
 
 @end

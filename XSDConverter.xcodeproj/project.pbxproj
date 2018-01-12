@@ -103,6 +103,7 @@
 		B4C55C4718707F2A0006D92A /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = B4C55C4618707F2A0006D92A /* MainMenu.xib */; };
 		B4C55C4918707FEB0006D92A /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = B4C55C4818707FEB0006D92A /* AppIcon.icns */; };
 		B4D1F4D01A63C79E003A31E4 /* libxml-bridging-header.header in Resources */ = {isa = PBXBuildFile; fileRef = B444BED11A633C5D00FCA8DA /* libxml-bridging-header.header */; };
+		E0D497332009607E00E0E581 /* appDefaults.plist in Resources */ = {isa = PBXBuildFile; fileRef = E0D497322009607E00E0E581 /* appDefaults.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -243,6 +244,7 @@
 		B4C55C4618707F2A0006D92A /* MainMenu.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MainMenu.xib; sourceTree = "<group>"; };
 		B4C55C4818707FEB0006D92A /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
 		B4F495AE1857BFCA00A6E488 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		E0D497322009607E00E0E581 /* appDefaults.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = appDefaults.plist; sourceTree = "<group>"; };
 		F8B6F10C13895EA400F4CC65 /* libxml2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.dylib; path = usr/lib/libxml2.dylib; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -505,6 +507,7 @@
 				B4C55C4818707FEB0006D92A /* AppIcon.icns */,
 				B4C55C4618707F2A0006D92A /* MainMenu.xib */,
 				B42F9E701A4850150007FC96 /* Info.plist */,
+				E0D497322009607E00E0E581 /* appDefaults.plist */,
 			);
 			path = app;
 			sourceTree = "<group>";
@@ -731,6 +734,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E0D497332009607E00E0E581 /* appDefaults.plist in Resources */,
 				B4C55C4918707FEB0006D92A /* AppIcon.icns in Resources */,
 				B4C55C4718707F2A0006D92A /* MainMenu.xib in Resources */,
 			);
