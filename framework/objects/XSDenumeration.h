@@ -12,6 +12,8 @@
 
 /* This is for the values of the enumeration */
 @property (readonly, nonatomic) NSString* value;
+/* This is for the formatted values of the enumeration */
+@property (readonly, nonatomic) NSString* formattedValue;
 /* This is used for the baseType */
 @property (readonly, nonatomic) NSString* type;
 

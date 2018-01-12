@@ -54,4 +54,8 @@
     return self;
 }
 
+- (BOOL) hasElements {
+    return self.elements.count > 0;
+}
+
 @end

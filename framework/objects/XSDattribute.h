@@ -14,5 +14,6 @@
 
 - (NSString*) variableName; //name in generated code
 - (BOOL) hasEnumeration;
+- (BOOL) isOptional;
 
 @end

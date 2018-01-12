@@ -328,7 +328,7 @@
     }
     
     NSString *prefix = [self.schema classPrefixForType:self];
-    NSString *rtn = [NSString stringWithFormat: @"%@%@Enum", prefix, vName];
+    NSString *rtn = [NSString stringWithFormat: @"%@%@", prefix, vName];
     return rtn;
 }
 

@@ -98,4 +98,8 @@
     return isEnumeration;
 }
 
+- (BOOL) isOptional {
+    return ![@"Double" isEqualToString:[self codeType]] && ![@"Int" isEqualToString:[self codeType]] && ![@"Bool" isEqualToString:[self codeType]];
+}
+
 @end

@@ -149,6 +149,10 @@
     return [NSArray array];
 }
 
+- (BOOL) hasElements {
+    return self.elements.count > 0;
+}
+
 - (NSArray*) simpleTypesInUse {
     NSMutableSet* simpleTypes = [NSMutableSet set];
     

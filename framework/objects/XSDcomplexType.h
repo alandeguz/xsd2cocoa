@@ -28,6 +28,7 @@
 - (BOOL) hasSimpleBaseClass;
 - (BOOL) hasComplexBaseClass;
 - (BOOL) hasComplexChildren;
+- (BOOL) hasElements;
 
 - (id<XSType>) baseClass;
 

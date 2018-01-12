@@ -6,4 +6,6 @@
 @property (readonly, nonatomic) NSString* ref;
 @property (readonly, nonatomic) NSArray* elements;
 
+- (BOOL) hasElements;
+
 @end

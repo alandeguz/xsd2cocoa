@@ -28,11 +28,22 @@
 
 - (NSString*) readCodeForContent;
 - (NSString*) variableName; //in generated code
+- (NSString*) codingKeyName; //in generated code
 
 - (BOOL) isSingleValue;
+- (BOOL) isNotOptionalOrNotMultiple;
 
 - (id<XSType>) schemaType;
 - (BOOL) hasEnumeration;
 - (NSString*) codeType;
+
+- (BOOL) isOptional;
+- (NSString*) defaultOptional;
+
+@end
+
+@interface NSString (SnakeCase)
+
+- (NSString*) toSnakeCase;
 
 @end

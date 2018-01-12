@@ -601,6 +601,9 @@
         vName = newName;
     }
     
+    NSString *firstChar = [vName substringToIndex:1];
+    vName = [[firstChar lowercaseString] stringByAppendingString:[vName substringFromIndex:1]];
+    
     assert(vName.length); //EVERYTHING has a name
     return vName;
 }

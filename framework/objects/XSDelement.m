@@ -89,7 +89,11 @@
                 }
             }
         }
-
+        if (self.name.length < 1) {
+            NSXMLNode *node = self.node.attributes[0];
+            self.name = [[node.stringValue componentsSeparatedByString:@":"] lastObject];
+        }
+        
         NSAssert(self.name, @"no name");
         
         //specify string as default value
@@ -136,6 +140,24 @@
 
 - (NSString*) variableName {
     return [XSDschema variableNameFromName:self.name multiple:!self.isSingleValue];
+}
+
+- (NSString*) codingKeyName {
+    if ([self.name containsString:@"rl"] || [self.name containsString:@"DIR"]) {
+        NSLog(@"here");
+    }
+    NSString *ret = [self.name toSnakeCase];
+    NSString *tmp = [self.name stringByReplacingCharactersInRange:NSMakeRange(0,1) withString:[[self.name substringToIndex:1] lowercaseString]];
+    if (![self.name isEqualToString:tmp]) {
+        NSLog(@"not equal");
+        ret = tmp;
+    }
+    
+    if (!self.isSingleValue && ![self.name hasSuffix:@"s"]) {
+        ret = [NSString stringWithFormat:@"%@s", ret];
+    }
+    
+    return ret;
 }
 
 /* 
@@ -187,4 +209,77 @@
     return [self.maxOccurs intValue] >= 0 && [self.maxOccurs intValue] <= 1;
 }
 
+- (BOOL) isNotOptionalOrNotMultiple {
+    return ![self isOptional] ||  ![self isSingleValue];
+}
+
+- (BOOL) isOptional {
+    return ![@"Double" isEqualToString:[self codeType]] && ![@"Int" isEqualToString:[self codeType]] && ![@"Bool" isEqualToString:[self codeType]];
+}
+
+- (NSString*) defaultOptional {
+    
+    NSString *ct = [self codeType];
+    
+    if ([@"Double" isEqualToString:ct]) {
+        return @"0";
+    }
+    
+    if ([@"Int" isEqualToString:ct]) {
+        return @"0";
+    }
+    
+    if ([@"Bool" isEqualToString:ct]) {
+        return @"false";
+    }
+    
+    return [NSString stringWithFormat:@"%@()", ct];
+}
+
 @end
+
+@implementation NSString (National)
+
+- (NSString*) toSnakeCase {
+    if ([self isEqualToString:@"Type"]) {
+        NSLog(@"here");
+    }
+    
+    NSRange upcaseRange = NSMakeRange('A', 26);
+    NSRange numberRange = NSMakeRange('0', 10);
+    NSIndexSet *upcaseSet = [NSIndexSet indexSetWithIndexesInRange:upcaseRange];
+    NSIndexSet *numberSet = [NSIndexSet indexSetWithIndexesInRange:numberRange];
+    NSMutableString *result = [NSMutableString string];
+    NSMutableString *oneWord = [NSMutableString string];
+    BOOL prevLetterIsUc = NO;
+    for (int i = 0; i < self.length; i++) {
+        char oneChar = [self characterAtIndex:i];
+        if ([upcaseSet containsIndex:oneChar]||[numberSet containsIndex:oneChar]) {
+            if ( prevLetterIsUc ) {
+            } else {
+                if (result.length == 0) {
+                    [result appendFormat:@"%@", [oneWord lowercaseString]];
+                } else {
+                    [result appendFormat:@"_%@", [oneWord lowercaseString]];
+                }
+                oneWord = [NSMutableString string];
+            }
+            prevLetterIsUc = YES;
+        } else {
+            prevLetterIsUc = NO;
+        }
+        [oneWord appendFormat:@"%c", oneChar];
+    }
+    if (oneWord.length > 0) {
+        [result appendFormat:@"_%@", [oneWord lowercaseString]];
+    }
+    
+    if ([result hasPrefix:@"_"]) {
+        [result deleteCharactersInRange:NSMakeRange(0,1)];
+    }
+    
+    return result;
+}
+
+@end
+
