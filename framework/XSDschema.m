@@ -708,7 +708,8 @@
                                          withVariables:type.substitutionDict];
             
             NSString* headerFileName = [NSString stringWithFormat: @"%@.%@", type.targetClassFileName, self.headerTemplateExtension];
-            NSURL* headerFilePath = [destinationFolder URLByAppendingPathComponent: headerFileName];
+            NSURL *newDestinationFolder = [self newDestinationFolder:destinationFolder schemaNode:type];
+            NSURL* headerFilePath = [newDestinationFolder URLByAppendingPathComponent: headerFileName];
             BOOL br = [result writeToURL: headerFilePath atomically:YES encoding: NSUTF8StringEncoding error: error];
 
             /* Ensure that there was no errors for writing */
@@ -724,7 +725,10 @@
                                          withVariables: type.substitutionDict];
             
             NSString* classFileName = [NSString stringWithFormat: @"%@.%@", type.targetClassFileName, self.classTemplateExtension];
-            NSURL* classFilePath = [destinationFolder URLByAppendingPathComponent: classFileName];
+            
+            NSURL *newDestinationFolder = [self newDestinationFolder:destinationFolder schemaNode:type];
+           
+            NSURL* classFilePath = [newDestinationFolder URLByAppendingPathComponent: classFileName];
             BOOL br = [result writeToURL:classFilePath atomically:YES encoding: NSUTF8StringEncoding error: error];
             
             /* Ensure that there was no errors for writing */
@@ -754,7 +758,8 @@
                                              withVariables: type.substitutionDict];
                 
                 NSString* classFileName = [NSString stringWithFormat: @"%@+File.%@", type.targetClassFileName, self.readerClassTemplateExtension];
-                NSURL* classFilePath = [destinationFolder URLByAppendingPathComponent: classFileName];
+                NSURL *newDestinationFolder = [self newDestinationFolder:destinationFolder schemaNode:type];
+                NSURL* classFilePath = [newDestinationFolder URLByAppendingPathComponent: classFileName];
                 BOOL br = [result writeToURL: classFilePath atomically:YES encoding: NSUTF8StringEncoding error: error];
                 
                 /* Ensure that there was no errors for writing */
@@ -780,7 +785,8 @@
                                          withVariables:type.substitutionDict];
             
             NSString* headerFileName = [NSString stringWithFormat: @"%@.%@", type.enumerationFileName, self.enumHeaderTemplateExtension];
-            NSURL* headerFilePath = [destinationFolder URLByAppendingPathComponent: headerFileName];
+            NSURL *newDestinationFolder = [self newDestinationFolder:destinationFolder schemaNode:type];
+            NSURL* headerFilePath = [newDestinationFolder URLByAppendingPathComponent: headerFileName];
             BOOL br = [result writeToURL: headerFilePath atomically:YES encoding: NSUTF8StringEncoding error: error];
             
             /* Ensure that there was no errors for writing */
@@ -796,7 +802,8 @@
                                          withVariables: type.substitutionDict];
             
             NSString* classFileName = [NSString stringWithFormat: @"%@.%@", type.enumerationFileName, self.enumClassTemplateExtension];
-            NSURL* classFilePath = [destinationFolder URLByAppendingPathComponent: classFileName];
+            NSURL *newDestinationFolder = [self newDestinationFolder:destinationFolder schemaNode:type];
+            NSURL* classFilePath = [newDestinationFolder URLByAppendingPathComponent: classFileName];
             BOOL br = [result writeToURL:classFilePath atomically:YES encoding: NSUTF8StringEncoding error: error];
             
             /* Ensure that there was no errors for writing */
@@ -877,5 +884,39 @@
     
     return (formatted.count == files.count);
 }
+
+- (NSURL*) newDestinationFolder:(NSURL*)destinationFolder schemaNode:(XSSchemaNode*)schemaNode {
+    
+    if (targetNamespacePrefix == nil) {
+        NSDictionary *appDefaults = [NSDictionary dictionaryWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"appDefaults" ofType:@"plist"]];
+        NSString *prefix = [appDefaults objectForKey:@"targetNamespacePrefix"];
+        targetNamespacePrefix = [NSString stringWithFormat:@"%@%@", @"", prefix];
+    }
+    
+    if (targetNamespacePrefix.length == 0) {
+        return destinationFolder;
+    }
+    NSURL *newDestinationFolder = destinationFolder;
+    NSString *tn = [schemaNode.schema.targetNamespace stringByReplacingOccurrencesOfString:targetNamespacePrefix withString:@""];
+    NSArray *pieces = [tn componentsSeparatedByString:@"."];
+    NSLog(@"targetNamespace = %@", schemaNode.schema.targetNamespace);
+    NSLog(@"tn = %@", tn);
+    
+    for (NSString *piece in pieces) {
+        NSString *p = [[piece lowercaseString] capitalizedString];
+        newDestinationFolder = [newDestinationFolder URLByAppendingPathComponent:p isDirectory:YES];
+        
+        BOOL isDir;
+        /* Ensure that the item was created */
+        if (![[NSFileManager defaultManager] fileExistsAtPath:newDestinationFolder.path isDirectory:&isDir]) {
+            [[NSFileManager defaultManager] createDirectoryAtURL:newDestinationFolder withIntermediateDirectories:NO attributes:nil error:nil];
+        }
+    }
+    return newDestinationFolder;
+}
+
+static NSString *targetNamespacePrefix = nil;
+
+
 
 @end

@@ -6,5 +6,9 @@
 	<string>classPrefix will be appended (both filename and classname) of all generated classes</string>
 	<key>classPrefix</key>
 	<string></string>
+    <key>targetNamespacePrefixUsage</key>
+    <string>targetNamespacePrefix will be used to separate the namespace classes into different folders</string>
+    <key>targetNamespacePrefix</key>
+    <string></string>
 </dict>
 </plist>
