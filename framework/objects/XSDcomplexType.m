@@ -207,10 +207,42 @@
     return rtn;
 }
 
+- (NSString*)retrieveTargetClassNamePrefix {
+    NSDictionary *appDefaults = [NSDictionary dictionaryWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"appDefaults" ofType:@"plist"]];
+    NSString *classPrefix = [appDefaults objectForKey:@"targetClassNamePrefix"];
+    return [NSString stringWithFormat:@"%@", classPrefix];
+}
+
+- (NSArray*)retrieveTargetClassNamePrefixArray {
+    NSDictionary *appDefaults = [NSDictionary dictionaryWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"appDefaults" ofType:@"plist"]];
+    NSArray *array = [appDefaults objectForKey:@"targetClassNamePrefixArray"];
+    NSMutableArray *rtn = [NSMutableArray new];
+    for (id item in array) {
+        [rtn addObject:(NSString*)item];
+    }
+    return rtn;
+}
+
+static NSString* targetClassNamePrefix = nil;
+static NSArray* targetClassNamePrefixArray = nil;
+
 - (NSString*) targetClassName {
+    
+    if (targetClassNamePrefix == nil) {
+        targetClassNamePrefix = [self retrieveTargetClassNamePrefix];
+        targetClassNamePrefixArray = [self retrieveTargetClassNamePrefixArray];
+    }
+    
     NSCharacterSet* illegalChars = [NSCharacterSet characterSetWithCharactersInString: @"-"];
     
     NSString* vName = [self.name stringByReplacingCharactersInRange:NSMakeRange(0,1) withString:[[self.name substringToIndex:1] uppercaseString]];
+    if (targetClassNamePrefix.length > 0) {
+        for (NSString *aName in targetClassNamePrefixArray) {
+            if ([vName isEqualToString:aName]) {
+                vName = [NSString stringWithFormat:@"%@%@", targetClassNamePrefix, vName];
+            }
+        }
+    }
     NSRange range = [vName rangeOfCharacterFromSet: illegalChars];
     while(range.length > 0) {
         // delete illegal char
@@ -223,6 +255,7 @@
     
     NSString *prefix = [self.schema classPrefixForType:self];
     NSString *rtn = [NSString stringWithFormat: @"%@%@", prefix, vName];
+
     return rtn;
 }
 
