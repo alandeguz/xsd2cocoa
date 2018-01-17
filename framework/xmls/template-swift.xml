@@ -235,7 +235,7 @@ xsi:schemaLocation="http://www.example.com/xsd2cocoa template.xsd">
         
         import Foundation
 
-        class {{ type.targetClassName }} {% if type.hasComplexBaseClass %}: {{ type.baseClass.targetClassName }} {%else %}: NSObject, Codable {% /if %}{
+        class {{ type.targetClassName }} {% if type.hasComplexBaseClass %}: {{ type.baseClass.targetClassName }} {%else %}: NSObject, Decodable {% /if %}{
 
             {% for attribute in type.attributes %}
             var {{ attribute.variableName }}: {% if attribute.hasEnumeration %}{{ attribute.schemaType.enumerationName }}{% else %}{{ attribute.codeType }}{% /if %}?
@@ -249,19 +249,18 @@ xsi:schemaLocation="http://www.example.com/xsd2cocoa template.xsd">
             
             {% if type.hasElements %}private enum CodingKeys: String, CodingKey {
                 {% for element in type.elements %}case {{element.variableName}} = "{{element.codingKeyName}}"
-                {% /for %}
+{% /for %}
             }
             {% /if %}
 
             {% if type.hasElements %}
             required init(from decoder: Decoder) throws {
-                {% if type.hasComplexBaseClass %}try super.init(from: decoder){% else %}super.init(){% /if %}
-     
                 let values = try decoder.container(keyedBy: CodingKeys.self)
                 
                 {% for element in type.elements %}{% if element.hasEnumeration %}{{ element.variableName }} = try? values.decode({{ element.schemaType.enumerationName }}.self, forKey: .{{element.variableName}}){% else %}{{ element.variableName }} = {% if element.isNotOptionalOrNotMultiple %}({% else %}{% /if %}try? values.decode({{ element.codeType }}.self, forKey: .{{element.variableName}}){% /if %}{% if element.isNotOptionalOrNotMultiple %}) ?? {{ element.defaultOptional }}{% else %}{% /if %}
                 {% /for %}
                 
+                {% if type.hasComplexBaseClass %}try super.init(from: decoder){% else %}{% /if %}
             }
             {% /if %}
             
