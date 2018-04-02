@@ -234,8 +234,8 @@ xsi:schemaLocation="http://www.example.com/xsd2cocoa template.xsd">
         //
         
         import Foundation
-
-        class {{ type.targetClassName }} {% if type.hasComplexBaseClass %}: {{ type.baseClass.targetClassName }} {%else %}: NSObject, Decodable {% /if %}{
+        
+        class {{ type.targetClassName }} {% if type.hasComplexBaseClass %}: {{ type.baseClass.targetClassName }} {%else %}: NSObject, Decodable, CanEncode {% /if %}{
 
             {% for attribute in type.attributes %}
             var {{ attribute.variableName }}: {% if attribute.hasEnumeration %}{{ attribute.schemaType.enumerationName }}{% else %}{{ attribute.codeType }}{% /if %}?
@@ -249,9 +249,13 @@ xsi:schemaLocation="http://www.example.com/xsd2cocoa template.xsd">
             
             {% if type.hasElements %}private enum CodingKeys: String, CodingKey {
                 {% for element in type.elements %}case {{element.variableName}} = "{{element.codingKeyName}}"
-{% /for %}
+                {% /for %}
             }
             {% /if %}
+            
+            override init() {
+                super.init()
+            }
 
             {% if type.hasElements %}
             required init(from decoder: Decoder) throws {
@@ -264,6 +268,15 @@ xsi:schemaLocation="http://www.example.com/xsd2cocoa template.xsd">
             }
             {% /if %}
             
+            
+            {% if type.hasComplexBaseClass %}override {% else %}{% /if %}func encode(to encoder: Encoder) throws {
+                {% if type.hasComplexBaseClass %}try super.encode(to: encoder){% else %}{% /if %}
+                var container = encoder.container(keyedBy: CodingKeys.self)
+            
+                {% for element in type.elements %}try? container.encodeIfPresent({{element.variableName}}, forKey: CodingKeys.{{element.variableName}})
+                {% /for %}
+            }
+        
         }]]>
         </class>
     </implementation>
