@@ -5,16 +5,20 @@
 	<key>classPrefixUsage</key>
 	<string>classPrefix will be appended (both filename and classname) of all generated classes</string>
 	<key>classPrefix</key>
-	<string></string>
+	<string>GBO</string>
 	<key>targetNamespacePrefixUsage</key>
 	<string>targetNamespacePrefix will be used to separate the namespace classes into different folders</string>
 	<key>targetNamespacePrefix</key>
-	<string></string>
+	<string>http://com.ehi.gbo.location.dto.</string>
 	<key>targetClassNamePrefixUsage</key>
 	<string>targetClassNamePrefix use for substituting classnames</string>
 	<key>targetClassNamePrefix</key>
-	<string></string>
+	<string>Location</string>
 	<key>targetClassNamePrefixArray</key>
-	<array/>
+	<array>
+		<string>AdditionalDataInResponse2</string>
+		<string>Address2</string>
+		<string>Phone2</string>
+	</array>
 </dict>
 </plist>
