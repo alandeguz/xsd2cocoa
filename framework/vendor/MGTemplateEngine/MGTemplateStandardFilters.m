@@ -14,7 +14,18 @@
 #define CAPITALIZED		@"capitalized"
 #define DATE_FORMAT		@"date_format"
 #define COLOR_FORMAT	@"color_format"
-
+#define SUBSTRING    @"substring"
+#define REPLACE    @"replace"
+//#define caselikethis        @"caselikethis"
+//#define CaseLikeThis        @"CaseLikeThis"
+//#define caseLikeThis        @"caseLikeThis"
+//#define CASELIKETHIS        @"CASELIKETHIS"
+//#define case_like_this        @"case_like_this"
+//#define Case_Like_This        @"Case_Like_This"
+//#define case_Like_This        @"case_Like_This"
+//#define CASE_LIKE_THIS        @"CASE_LIKE_THIS"
+//"CLAMPS" value x so that min_value <= X <= max_value
+#define CLAMP(x, min_value, max_value) MIN(MAX(x, min_value), max_value)
 
 @implementation MGTemplateStandardFilters
 
@@ -23,14 +34,41 @@
 {
 	return [NSArray arrayWithObjects:
 			UPPERCASE, LOWERCASE, CAPITALIZED, 
-			DATE_FORMAT, COLOR_FORMAT, 
+			DATE_FORMAT, COLOR_FORMAT, SUBSTRING, REPLACE,
 			nil];
 }
 
 
 - (id)filterInvoked:(NSString *)filter withArguments:(NSArray *)args onValue:(id)value
 {
-	if ([filter isEqualToString:UPPERCASE]) {
+    
+    if ([filter isEqualToString:REPLACE]) {
+        if([args count] == 2) {
+            return [value stringByReplacingOccurrencesOfString:[args objectAtIndex:1] withString:[args objectAtIndex:2] ];
+        }
+    } else if ([filter isEqualToString:SUBSTRING]) {
+        if([args count] == 2) {
+            NSInteger begin = [[args objectAtIndex:0] integerValue];
+            NSInteger end = [[args objectAtIndex:1] integerValue];
+            NSInteger stringLength =[value length];
+            if(begin < 0) { //Realitive to end of string? -> convert to absolute position
+                begin = CLAMP(begin + stringLength+1, 0, stringLength);
+            } else {
+                begin = CLAMP(begin, 0, stringLength);
+            }
+            if(end < 0) { //Realitive to end of string? -> convert to absolute position
+                end = CLAMP(end + stringLength +1, 0, stringLength); //Note: the +1 is so that -1 will indicate the end of the string
+            } else {
+                end = CLAMP(end, 0, stringLength);
+            }
+            
+            if (begin >= end) { //Bad Range -> return empty string
+                return @"";
+            }
+            NSString* result = [value substringWithRange:NSMakeRange(begin, end-begin)];
+            return result;
+        }
+    } else if ([filter isEqualToString:UPPERCASE]) {
 		return [[NSString stringWithFormat:@"%@", value] uppercaseString];
 		
 	} else if ([filter isEqualToString:LOWERCASE]) {

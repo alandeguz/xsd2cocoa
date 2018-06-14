@@ -9,7 +9,7 @@
 #import "MGTemplateStandardMarkers.h"
 #import "MGTemplateStandardFilters.h"
 #import "DeepMutableCopy.h"
-
+#import "XSSimpleType.h"
 
 #define DEFAULT_MARKER_START		@"{%"
 #define DEFAULT_MARKER_END			@"%}"
@@ -360,7 +360,12 @@
 	id parent = nil;
 	NSString *key = nil;
 	id result = [self valueForVariable:var parent:&parent parentKey:&key];
-	//NSLog(@"var: %@, parent: %@, key: %@, result: %@", var, parent, key, result);
+    
+	NSLog(@"var: %@, parent: %@, key: %@, result: %@", var, parent, key, result);
+    if( [parent isKindOfClass:[XSSimpleType class]] ) {
+        XSSimpleType* simpleType = (XSSimpleType*)parent;
+//        [simpleType ]
+    }
 	return result;
 }
 
